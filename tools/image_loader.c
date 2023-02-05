@@ -4,8 +4,15 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stbi_image.h"
 
+void usage(void) {
+    printf("Usage: waphics_extra_img_load <image_path> <image_name>\n");
+    exit(1);
+}
+
 int main(int argc, char **argv) {
-    assert(argc == 3);
+    if (argc < 3) {
+        usage();
+    }
     int w, h, c;
     int original_length = strlen(argv[2]);
     uint32_t *pixels = (uint32_t*)stbi_load(argv[1], &w, &h, &c, 0);
