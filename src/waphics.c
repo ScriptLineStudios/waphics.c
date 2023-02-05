@@ -1,4 +1,7 @@
 #include <stdint.h>
+
+#ifndef WAPHICS_H_
+#define WAPHICS_H_
 extern int get_key(int key_code);
 extern uint32_t jfloor(int); 
 extern double jsqrt(int); 
@@ -43,7 +46,33 @@ typedef struct {
     int x, y, r;
 } Circle;
 
-Rectangle rectangle_new(int x, int y, int width, int height) {
+typedef struct {
+    unsigned int width, height;
+    uint32_t *pixels;
+} Screen;
+
+Rectangle waphics_rectangle_new(int x, int y, int width, int height);
+Circle waphics_circle_new(int x, int y, int radius);
+Screen waphics_screen_new(uint32_t *pixels, unsigned int width, unsigned int height);
+void waphics_fill_screen(Screen screen, uint32_t color);
+void waphics_draw_rect(Screen screen, Rectangle rect, uint32_t color);
+void waphics_draw_line(Screen screen, int x1, int y1, int x2, int y2, int color);
+void waphics_draw_circle(Screen screen, Circle circle, uint32_t color);
+void waphics_draw_triangle(Screen screen, int _x1, int _y1, 
+                                  int _x2, int _y2, 
+                                  int _x3, int _y3, uint32_t color1, uint32_t color2, uint32_t color3);
+void waphics_draw_image(Screen screen, Rectangle rect,
+        uint32_t scale, uint32_t *pixels);
+void waphics_draw_image_alpha(Screen screen, Rectangle rect,
+        uint32_t scale, uint32_t *pixels, uint32_t alpha);
+
+#define RECT(x, y, w, h) waphics_rectangle_new(x, y, w, h)
+#define CIRCLE(x, y, r) waphics_rectangle_new(x, y, r)
+#define SCREEN(pixels, w, h) waphics_screen_new(pixels, w, h)
+
+#endif
+
+Rectangle waphics_rectangle_new(int x, int y, int width, int height) {
     Rectangle rect;
     rect.x = x;
     rect.y = y;
@@ -52,7 +81,7 @@ Rectangle rectangle_new(int x, int y, int width, int height) {
     return rect;
 }
 
-Circle circle_new(int x, int y, int radius) {
+Circle waphics_circle_new(int x, int y, int radius) {
     Circle circ;
     circ.x = x;
     circ.y = y;
@@ -60,17 +89,12 @@ Circle circle_new(int x, int y, int radius) {
     return circ;
 }
 
-typedef struct {
-    unsigned int width, height;
-    uint32_t *pixels;
-} Screen;
-
-Screen renderer_init(uint32_t *pixels, unsigned int width, unsigned int height) {
+Screen waphics_screen_new(uint32_t *pixels, unsigned int width, unsigned int height) {
     Screen screen = {.width=width,  .height=height, .pixels=pixels};
     return screen;
 }
 
-void fill_screen(Screen screen, uint32_t color) {
+void waphics_fill_screen(Screen screen, uint32_t color) {
     for (unsigned int x = 0; x < screen.width; x++) {
         for (unsigned int y = 0; y < screen.height; y++) {
             screen.pixels[y * screen.width + x] = color;
@@ -78,7 +102,7 @@ void fill_screen(Screen screen, uint32_t color) {
     }
 }   
 
-void draw_rect(Screen screen, Rectangle rect, uint32_t color) {
+void waphics_draw_rect(Screen screen, Rectangle rect, uint32_t color) {
     for (int _y = rect.y; _y < rect.h+rect.y; _y++) {
         for (int _x = rect.x; _x < rect.w+rect.x; _x++) {
             if (_x < screen.width && _x > 0 && _y < screen.height && _y > 0) {
@@ -88,7 +112,7 @@ void draw_rect(Screen screen, Rectangle rect, uint32_t color) {
     }
 }   
 
-void draw_line(Screen screen, int x1, int y1, int x2, int y2, int color) {
+void waphics_draw_line(Screen screen, int x1, int y1, int x2, int y2, int color) {
     //behold the worlds worst line rendering algorithm
     double m = ((float)y2 - (float)y1) / (((float)x2 - (float)x1)+0.0000000001);
     double c = (float)y1 - m * (float)x1;
@@ -129,7 +153,7 @@ int dist(int x1, int y1, int x2, int y2) {
     return (jsqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)) + 1) / 1;
 }
 
-void draw_circle(Screen screen, Circle circle, uint32_t color) {
+void waphics_draw_circle(Screen screen, Circle circle, uint32_t color) {
     for (int i = 0; i <= screen.width * screen.height; i++) {
         float _x = i % screen.width;
         float _y = i / screen.width;
@@ -171,7 +195,7 @@ uint32_t mix_colors_triangle(uint32_t color1, uint32_t color2, uint32_t color3, 
 
 }
 
-void draw_triangle(Screen screen, int _x1, int _y1, 
+void waphics_draw_triangle(Screen screen, int _x1, int _y1, 
                                   int _x2, int _y2, 
                                   int _x3, int _y3, uint32_t color1, uint32_t color2, uint32_t color3) {
 
@@ -201,10 +225,8 @@ float lerp(uint32_t v0, uint32_t v1, float t) {
   return (1 - t) * v0 + t * v1;
 }
 
-void draw_image(Screen screen, Rectangle rect,
+void waphics_draw_image(Screen screen, Rectangle rect,
         uint32_t scale, uint32_t *pixels) {
-    
-    
     for (int _y = 0; _y < rect.h*scale; _y++) {
         for (int _x = 0; _x < rect.w*scale; _x++) {
             uint32_t pixel = pixels[(_y/scale * rect.w + _x/scale)];
@@ -221,10 +243,8 @@ void draw_image(Screen screen, Rectangle rect,
     }
 }
 
-void draw_image_alpha(Screen screen, Rectangle rect,
+void waphics_draw_image_alpha(Screen screen, Rectangle rect,
         uint32_t scale, uint32_t *pixels, uint32_t alpha) {
-    
-    
     for (int _y = 0; _y < rect.h*scale; _y++) {
         for (int _x = 0; _x < rect.w*scale; _x++) {
             uint32_t pixel = pixels[(_y/scale * rect.w + _x/scale)];

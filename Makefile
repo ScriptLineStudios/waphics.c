@@ -1,14 +1,14 @@
-output.wasm: main.c renderer.c
+output.wasm: main.c waphics.c
 	clang --target=wasm32 -nostdlib -Wl,--no-entry -Wl,--export-all -Wl,--allow-undefined -o output.wasm main.c
 
 DESTDIR = $$HOME/bin
 install: builder.c
-	${CC} -Wall -Wextra -pedantic -o builder builder.c
-	${CC} -Wall -Wextra -pedantic -o img_loader tools/image_loader.c -lm
-	cp builder ${DESTDIR}
-	cp img_loader ${DESTDIR}
+	${CC} -Wall -Wextra -pedantic -o waphics builder.c
+	${CC} -Wall -Wextra -pedantic -o waphics_extra_img_load tools/image_loader.c -lm
+	cp waphics ${DESTDIR}
+	cp waphics_extra_img_load ${DESTDIR}
 
 clean:
-	rm builder
-	rm img_loader
+	rm waphics
+	rm waphics_extra_img_load
 
