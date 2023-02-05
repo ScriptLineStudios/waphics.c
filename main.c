@@ -12,3 +12,4 @@ uint32_t *run(void) {
     draw_rect(screen, rectangle_new(0, x, 50, 50), 0xFFFF00FF);
     return pixels;
 }
+
