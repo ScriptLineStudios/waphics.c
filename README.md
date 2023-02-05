@@ -10,8 +10,11 @@ Waphics allows you to easily create video games in C and export them to the web 
 uint32_t pixels[1000 * 600];
 Screen screen;
 
+#define WIDTH 1000
+#define HEIGHT 600
+
 void init(void) {
-    screen = SCREEN(pixels, 1000, 600);
+    screen = SCREEN(pixels, WIDTH, HEIGHT);
 }
 
 uint32_t *run(void) {
