@@ -1,0 +1,13 @@
+<html>
+<body>
+<canvas id="canvas" width="1000" height="600">
+</canvas>
+<script>
+function get_image(instance, pixels)
+{
+    return new ImageData(new Uint8ClampedArray(instance.exports.memory.buffer, pixels, 1000*600*4), 1000);
+}
+</script>
+<script src="javascript.js"></script>
+</body>
+</html>
