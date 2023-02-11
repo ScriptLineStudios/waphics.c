@@ -10,6 +10,4 @@ Waphics allows you to easily create video games in C and export them to the web 
 * Image rendering
 * Alpha blending
 
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+:doc:`Getting Started <waphics.rst>` 
