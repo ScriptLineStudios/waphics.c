@@ -4,13 +4,13 @@ output.wasm: main.c waphics.c
 DESTDIR = $$HOME/bin
 install: src/builder.c
 	${CC} -Wall -Wextra -pedantic -o waphics src/builder.c
-	${CC} -Wall -Wextra -pedantic -o waphics_extra_img_load tools/image_loader.c -lm
+	${CC} -Wall -Wextra -pedantic -o waphics_image_load tools/image_loader.c -lm
 	cp waphics ${DESTDIR}
-	cp waphics_extra_img_load ${DESTDIR}
+	cp waphics_image_load ${DESTDIR}
 	rm waphics
-	rm waphics_extra_img_load
+	rm waphics_image_load
 
 clean:
 	rm waphics
-	rm waphics_extra_img_load
+	rm waphics_image_load
 

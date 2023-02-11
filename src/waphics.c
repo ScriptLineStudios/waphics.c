@@ -38,6 +38,13 @@ extern void play_sound(const char *path);
 #define KEY_Z 90
 #define KEY_SPACE 32
 
+#define RED(color)   (((color)&0x000000FF)>>(8*0))
+#define GREEN(color) (((color)&0x0000FF00)>>(8*1))
+#define BLUE(color)  (((color)&0x00FF0000)>>(8*2))
+#define ALPHA(color) (((color)&0xFF000000)>>(8*3))
+#define RGBA(r, g, b, a) ((((r)&0xFF)<<(8*0)) | (((g)&0xFF)<<(8*1)) | (((b)&0xFF)<<(8*2)) | (((a)&0xFF)<<(8*3)))
+#define RGB(r, g, b) ((((r)&0xFF)<<(8*0)) | (((g)&0xFF)<<(8*1)) | (((b)&0xFF)<<(8*2)) | (((255)&0xFF)<<(8*3)))
+
 typedef struct {
     int x, y, w, h;
 } Rectangle;
@@ -65,12 +72,24 @@ void waphics_draw_image(Screen screen, Rectangle rect,
         uint32_t scale, uint32_t *pixels);
 void waphics_draw_image_alpha(Screen screen, Rectangle rect,
         uint32_t scale, uint32_t *pixels, uint32_t alpha);
+uint32_t waphics_rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
+uint32_t waphics_rgb(uint32_t r, uint32_t g, uint32_t b);
 
 #define RECT(x, y, w, h) waphics_rectangle_new(x, y, w, h)
-#define CIRCLE(x, y, r) waphics_rectangle_new(x, y, r)
+#define CIRCLE(x, y, r) waphics_circle_new(x, y, r)
 #define SCREEN(pixels, w, h) waphics_screen_new(pixels, w, h)
 
 #endif
+
+#ifdef WAPHICS_IMPLEMENTATION
+
+uint32_t waphics_rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
+    return RGBA(r, g, b, a);
+}
+
+uint32_t waphics_rgb(uint32_t r, uint32_t g, uint32_t b) {
+    return RGBA(r, g, b, 255);
+}
 
 Rectangle waphics_rectangle_new(int x, int y, int width, int height) {
     Rectangle rect;
@@ -154,21 +173,14 @@ int dist(int x1, int y1, int x2, int y2) {
 }
 
 void waphics_draw_circle(Screen screen, Circle circle, uint32_t color) {
-    for (int i = 0; i <= screen.width * screen.height; i++) {
-        float _x = i % screen.width;
-        float _y = i / screen.width;
-
-        if (dist((int)circle.x, (int)circle.y, (int)_x, (int)_y) < circle.r) {
-            screen.pixels[(int)_y * screen.width + (int)_x] = color;
+    for (int w = circle.x - circle.r; w < circle.x + circle.r; w++) {
+        for (int h = circle.y - circle.r; h < circle.y + circle.r; h++) {
+            if (dist((int)circle.x, (int)circle.y, (int)w, (int)h) < circle.r) {
+                screen.pixels[(int)h * screen.width + (int)w] = color;
+            }
         }
     }
 }
-
-#define RED(color)   (((color)&0x000000FF)>>(8*0))
-#define GREEN(color) (((color)&0x0000FF00)>>(8*1))
-#define BLUE(color)  (((color)&0x00FF0000)>>(8*2))
-#define ALPHA(color) (((color)&0xFF000000)>>(8*3))
-#define RGBA(r, g, b, a) ((((r)&0xFF)<<(8*0)) | (((g)&0xFF)<<(8*1)) | (((b)&0xFF)<<(8*2)) | (((a)&0xFF)<<(8*3)))
 
 uint8_t max(uint8_t n1, uint8_t n2) {
     if (n1 >= n2) return n1;
@@ -260,3 +272,4 @@ void waphics_draw_image_alpha(Screen screen, Rectangle rect,
         }
     }
 }
+#endif

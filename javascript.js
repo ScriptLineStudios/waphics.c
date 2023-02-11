@@ -24,7 +24,6 @@ function _render(instance, ctx, func) {
     function jsin(x) {
         return Math.sin(x);
     }
-    console.log(window);
     var keyCode;
     function get_key(key) {
         document.addEventListener(
@@ -43,7 +42,6 @@ function _render(instance, ctx, func) {
         return 0;
     }
         
-
     function play_sound(path) {
         var size = 1;
         var array = new Uint8Array(buffer, path, size);
