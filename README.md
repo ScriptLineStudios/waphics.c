@@ -117,9 +117,10 @@ uint32_t *run(void) {
     
   return screen.pixels;
 }
+```
 
 # Keyboard Inputs
-```
+```C
 if get_key(KEY_A) {
   // the code here will only run when A is pressed
 }
