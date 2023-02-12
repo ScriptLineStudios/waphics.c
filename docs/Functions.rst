@@ -22,6 +22,7 @@ Returns a new Screen.
 .. note::
 
   All functions which return a new instance of a strcture have corrosponding macros:
+  
   .. code-block:: c
 
     #define RECT(x, y, w, h) waphics_rectangle_new(x, y, w, h)
