@@ -53,6 +53,7 @@ uint32_t *run(void) {
 Triangle with mouse input.
 
 ![Peek 2023-02-12 12-07](https://user-images.githubusercontent.com/85095943/218304809-1dea99ef-9ea0-415a-ad4b-c9cf9d3096ff.gif)
+
 Image loading with alpha.
 
 # Using the Library
