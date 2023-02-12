@@ -168,15 +168,17 @@ void waphics_draw_line(Screen screen, int x1, int y1, int x2, int y2, int color)
     }   
 }
 
-int dist(int x1, int y1, int x2, int y2) {
-    return (jsqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)) + 1) / 1;
+float dist(int x1, int y1, int x2, int y2) {
+    return (jsqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)));
 }
 
 void waphics_draw_circle(Screen screen, Circle circle, uint32_t color) {
     for (int w = circle.x - circle.r; w < circle.x + circle.r; w++) {
         for (int h = circle.y - circle.r; h < circle.y + circle.r; h++) {
-            if (dist((int)circle.x, (int)circle.y, (int)w, (int)h) < circle.r) {
-                screen.pixels[(int)h * screen.width + (int)w] = color;
+            if (circle.x < screen.width && circle.x > 0 && circle.y < screen.height && circle.y > 0) {
+                if (dist((int)circle.x, (int)circle.y, (int)w, (int)h) < circle.r) {
+                    screen.pixels[(int)h * screen.width + (int)w] = color;
+                }
             }
         }
     }
@@ -187,24 +189,33 @@ uint8_t max(uint8_t n1, uint8_t n2) {
     return n1;
 }
 
-uint32_t mix_colors_triangle(uint32_t color1, uint32_t color2, uint32_t color3, uint32_t strength1, uint32_t strength2, uint32_t strength3, float area) {
+uint32_t mix_colors_triangle(uint32_t color1, uint32_t color2, uint32_t color3, float strength1, float strength2, float strength3, float area) {
     uint8_t red1 = RED(color1);
     uint8_t green1 = GREEN(color1);
     uint8_t blue1 = BLUE(color1);
-    uint8_t alpha1 = ALPHA(color1);
 
     uint8_t red2 = RED(color2);
     uint8_t green2 = GREEN(color2);
     uint8_t blue2 = BLUE(color2);
-    uint8_t alpha2 = ALPHA(color2);
 
     uint8_t red3 = RED(color3);
     uint8_t green3 = GREEN(color3);
     uint8_t blue3 = BLUE(color3);
-    uint8_t alpha3 = ALPHA(color3);
 
-    return color1;
+    if (strength1==0) strength1 = 1;
+    if (strength2==0) strength2 = 1;
+    if (strength3==0) strength3 = 1;
 
+
+    float distp1 = 1/strength1;
+    float distp2 = 1/strength2;
+    float distp3 = 1/strength3;
+    
+    uint8_t red = (uint8_t)((red1 * distp1 + red2 * distp2 + red3 * distp3) / (distp1 + distp2 + distp3));
+    uint8_t green = (uint8_t)((green1 * distp1 + green2 * distp2 + green3 * distp3) / (distp1 + distp2 + distp3));
+    uint8_t blue = (uint8_t)((blue1 * distp1 + blue2 * distp2 + blue3 * distp3) / (distp1 + distp2 + distp3));
+
+    return RGB(red, green, blue);
 }
 
 void waphics_draw_triangle(Screen screen, int _x1, int _y1, 
