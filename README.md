@@ -47,6 +47,12 @@ uint32_t *run(void) {
 }
 ```
 
+# Examples
+
+Triangle with mouse input:
+![Peek 2023-02-12 11-56](https://user-images.githubusercontent.com/85095943/218304377-a63e7635-d910-407b-86c9-5a90035aadac.gif)
+
+
 # Using the Library
 ## Building from source
 ```bash
