@@ -90,5 +90,5 @@ Draws an image from the gievn pixels scaled to the specified scale using the (x,
     void waphics_draw_image_alpha(Screen screen, Rectangle rect,
           uint32_t scale, uint32_t *pixels, uint32_t alpha);
           
-  Identical to ```waphics_draw_image``` execept for blending each pixel with the specified alpha value.
+  Identical to ``waphics_draw_image`` execept for blending each pixel with the specified alpha value.
 
