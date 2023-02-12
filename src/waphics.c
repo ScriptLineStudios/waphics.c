@@ -268,6 +268,7 @@ void waphics_draw_image(Screen screen, Rectangle rect,
 
 void waphics_draw_image_alpha(Screen screen, Rectangle rect,
         uint32_t scale, uint32_t *pixels, uint32_t alpha) {
+    if (alpha > 255) alpha = 255;
     for (int _y = 0; _y < rect.h*scale; _y++) {
         for (int _x = 0; _x < rect.w*scale; _x++) {
             uint32_t pixel = pixels[(_y/scale * rect.w + _x/scale)];

@@ -8,7 +8,6 @@
 *.elf
 
 *.wasm
-*.h
 *.html
 
 # Linker output

@@ -1,6 +1,8 @@
 #define WAPHICS_IMPLEMENTATION
 #include "src/waphics.c"
 
+
+
 uint32_t pixels[1000 * 600];
 Screen screen;
 
@@ -14,10 +16,10 @@ void init(void) {
 static int x;
 
 uint32_t *run(void) {
-    waphics_fill_screen(screen, 0xFFFFFFFF);
+    waphics_fill_screen(screen, 0xFF000000);
     waphics_draw_triangle(screen, x, 100, 
                                   200, 200, 
-                                  150, 200, 
+                                  x, x, 
                                   0xFF0000FF, 0xFF00FF00, 0xFFFF0000);
 
     if (get_key(KEY_D)) x+=10;
