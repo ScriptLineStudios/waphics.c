@@ -1,7 +1,11 @@
-output.wasm: main.c waphics.c
-	clang --target=wasm32 -nostdlib -Wl,--no-entry -Wl,--export-all -Wl,--allow-undefined -o output.wasm main.c
+# Define default C compiler: CC
+CC = clang
+# Define destribution folder: DESTDIR
+DESTDIR = $HOME/bin
 
-DESTDIR = $$HOME/bin
+output.wasm: 
+	${CC} --target=wasm32 -nostdlib -Wl,--no-entry -Wl,--export-all -Wl,--allow-undefined -o output.wasm main.c
+
 install: src/builder.c
 	${CC} -Wall -Wextra -pedantic -o waphics src/builder.c
 	${CC} -Wall -Wextra -pedantic -o waphics_image_load tools/image_loader.c -lm
