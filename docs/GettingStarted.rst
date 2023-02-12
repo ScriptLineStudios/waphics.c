@@ -44,6 +44,7 @@ This will generate the following:
 
     index.html
     output.wasm
+    javascript.js
     
 Simpliy run index.html using a web server of your choice, and you will be greeted by your window!
 
