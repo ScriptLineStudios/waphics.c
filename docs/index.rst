@@ -14,6 +14,7 @@ Waphics allows you to easily create video games in C and export them to the web 
    :maxdepth: 2
 
    GettingStarted
+   Functions
 
 .. Indices and tables
    ==================
