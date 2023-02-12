@@ -11,7 +11,7 @@ Getting started with waphics is easy. To download, simpliy do the following:
     
 Waphics is simple to use. Once installed simply create a new C file and add an init and run method as follows:
 
-.. code-block:: C
+.. code-block:: c
     #define WAPHICS_IMPLEMENTATION
     #include "waphics.c"
 
@@ -59,7 +59,7 @@ This will generate:
     
 This header file contains all the information needed to used the image on the web!
 
-.. code-block:: C
+.. code-block:: c
     // other include
     #include "<image_name>.h"
 
@@ -75,7 +75,7 @@ This header file contains all the information needed to used the image on the we
 Keyboard Inputs
 *****************
 
-.. code-block:: C
+.. code-block:: c
     if get_key(KEY_A) {
       // the code here will only run when A is pressed
     }
