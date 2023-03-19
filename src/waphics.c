@@ -1,4 +1,34 @@
 #include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <emscripten.h>
+
+EM_JS(void, test, (), {
+    document.getElementById('canvas').addEventListener('keypress', handleKeyPress);
+    function handleKeyPress(e) { 
+        console.log(e);    
+    }
+});
+
+EM_JS(int, get_key, (int key), {
+    // var keyCode;
+    // console.log("getting key");
+    // document.addEventListener(
+    //     "keydown",
+    //     function(event) {
+    //         keyCode = event.keyCode;
+    //     },
+    // );
+    // document.addEventListener(
+    //     "keyup",
+    //     function(event) {
+    //         if (event.keyCode == keyCode) keyCode = null;
+    //     },
+    // );
+    // if (keyCode == key) return 1;
+    // return 0;
+});
 
 #ifndef WAPHICS_H_
 #define WAPHICS_H_
@@ -6,7 +36,7 @@ extern int get_key(int key_code);
 extern uint32_t jfloor(int); 
 extern double jsqrt(int); 
 extern void jprint(float); 
-extern float jabs(float); 
+extern float jfabsf(float); 
 extern float jsin(float); 
 extern void play_sound(const char *path); 
 
@@ -74,6 +104,7 @@ void waphics_draw_image_alpha(Screen screen, Rectangle rect,
         uint32_t scale, uint32_t *pixels, uint32_t alpha);
 uint32_t waphics_rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
 uint32_t waphics_rgb(uint32_t r, uint32_t g, uint32_t b);
+int waphics_collide_rect(Rectangle *rect1, Rectangle *rect2);
 
 #define RECT(x, y, w, h) waphics_rectangle_new(x, y, w, h)
 #define CIRCLE(x, y, r) waphics_circle_new(x, y, r)
@@ -111,6 +142,14 @@ Circle waphics_circle_new(int x, int y, int radius) {
 Screen waphics_screen_new(uint32_t *pixels, unsigned int width, unsigned int height) {
     Screen screen = {.width=width,  .height=height, .pixels=pixels};
     return screen;
+}
+
+int waphics_collide_rect(Rectangle *rect1, Rectangle *rect2) {
+   if (rect1->x < rect2->x + rect2->w && rect1->x + rect1->w > rect2->x && rect1->y < rect2->y + rect2->h &&
+      rect1->y + rect1->h > rect2->y) {
+        return 1;         
+    }  
+    return 0;
 }
 
 void waphics_fill_screen(Screen screen, uint32_t color) {
@@ -169,7 +208,7 @@ void waphics_draw_line(Screen screen, int x1, int y1, int x2, int y2, int color)
 }
 
 float dist(int x1, int y1, int x2, int y2) {
-    return (jsqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)));
+    return (sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)));
 }
 
 void waphics_draw_circle(Screen screen, Circle circle, uint32_t color) {
@@ -229,14 +268,14 @@ void waphics_draw_triangle(Screen screen, int _x1, int _y1,
     float y2 = (float)_y2;
     float x3 = (float)_x3;
     float y3 = (float)_y3;
-    float area = jabs(( x2-x1)*(y3-y1) - (x3-x1)*(y2-y1) );
+    float area = fabsf(( x2-x1)*(y3-y1) - (x3-x1)*(y2-y1) );
     for (int i = 0; i <= screen.width * screen.height; i++) {
         float px = i % screen.width;
         float py = i / screen.width;
 
-        float area1 =    jabs( (x1-px)*(y2-py) - (x2-px)*(y1-py) );
-        float area2 =    jabs( (x2-px)*(y3-py) - (x3-px)*(y2-py) );
-        float area3 =    jabs( (x3-px)*(y1-py) - (x1-px)*(y3-py) );
+        float area1 =    fabsf( (x1-px)*(y2-py) - (x2-px)*(y1-py) );
+        float area2 =    fabsf( (x2-px)*(y3-py) - (x3-px)*(y2-py) );
+        float area3 =    fabsf( (x3-px)*(y1-py) - (x1-px)*(y3-py) );
         if (area1 + area2 + area3 == area) {
             uint32_t mixed_color = mix_colors_triangle(color1, color2, color3, dist(px, py, _x1, _y1), dist(px, py, _x2, _y2), dist(px, py, _x3, _y3), area);
             screen.pixels[(int)py * screen.width + (int)px] = mixed_color;
@@ -252,15 +291,17 @@ void waphics_draw_image(Screen screen, Rectangle rect,
         uint32_t scale, uint32_t *pixels) {
     for (int _y = 0; _y < rect.h*scale; _y++) {
         for (int _x = 0; _x < rect.w*scale; _x++) {
-            uint32_t pixel = pixels[(_y/scale * rect.w + _x/scale)];
-            uint32_t bg_pixel = screen.pixels[(_y+rect.y) * screen.width + (_x+rect.x)];
-
-            uint8_t red = lerp(RED(bg_pixel), RED(pixel), (float)ALPHA(pixel)/255);
-            uint8_t green = lerp(GREEN(bg_pixel), GREEN(pixel), (float)ALPHA(pixel)/255);
-            uint8_t blue = lerp(BLUE(bg_pixel), BLUE(pixel), (float)ALPHA(pixel)/255);
-            uint8_t alpha = lerp(ALPHA(bg_pixel), ALPHA(pixel), (float)ALPHA(pixel)/255);
             if (_x < screen.width && _x > 0 && _y < screen.height && _y > 0) {
-                screen.pixels[(_y+rect.y) * screen.width + (_x+rect.x)] = RGBA(red, green, blue, alpha);
+                uint32_t pixel = pixels[(_y/scale * rect.w + _x/scale)];
+                uint32_t bg_pixel = screen.pixels[(_y+rect.y) * screen.width + (_x+rect.x)];
+
+                uint8_t red = lerp(RED(bg_pixel), RED(pixel), (float)ALPHA(pixel)/255);
+                uint8_t green = lerp(GREEN(bg_pixel), GREEN(pixel), (float)ALPHA(pixel)/255);
+                uint8_t blue = lerp(BLUE(bg_pixel), BLUE(pixel), (float)ALPHA(pixel)/255);
+                uint8_t alpha = lerp(ALPHA(bg_pixel), ALPHA(pixel), (float)ALPHA(pixel)/255);
+                if ((_y+rect.y) * screen.width + (_x+rect.x) < screen.width * screen.height) {
+                    screen.pixels[(_y+rect.y) * screen.width + (_x+rect.x)] = RGBA(red, green, blue, alpha);
+                }
             }
         }
     }
@@ -271,14 +312,14 @@ void waphics_draw_image_alpha(Screen screen, Rectangle rect,
     if (alpha > 255) alpha = 255;
     for (int _y = 0; _y < rect.h*scale; _y++) {
         for (int _x = 0; _x < rect.w*scale; _x++) {
-            uint32_t pixel = pixels[(_y/scale * rect.w + _x/scale)];
-            uint32_t bg_pixel = screen.pixels[(_y+rect.y) * screen.width + (_x+rect.x)];
-
-            uint8_t red = lerp(RED(bg_pixel), RED(pixel), (float)alpha/255);
-            uint8_t green = lerp(GREEN(bg_pixel), GREEN(pixel), (float)alpha/255);
-            uint8_t blue = lerp(BLUE(bg_pixel), BLUE(pixel), (float)alpha/255);
-            uint8_t alpha = lerp(ALPHA(bg_pixel), ALPHA(pixel), (float)alpha/255);
             if (_x < screen.width && _x > 0 && _y < screen.height && _y > 0) {
+                uint32_t pixel = pixels[(_y/scale * rect.w + _x/scale)];
+                uint32_t bg_pixel = screen.pixels[(_y+rect.y) * screen.width + (_x+rect.x)];
+
+                uint8_t red = lerp(RED(bg_pixel), RED(pixel), (float)alpha/255);
+                uint8_t green = lerp(GREEN(bg_pixel), GREEN(pixel), (float)alpha/255);
+                uint8_t blue = lerp(BLUE(bg_pixel), BLUE(pixel), (float)alpha/255);
+                uint8_t alpha = lerp(ALPHA(bg_pixel), ALPHA(pixel), (float)alpha/255);
                 screen.pixels[(_y+rect.y) * screen.width + (_x+rect.x)] = RGBA(red, green, blue, alpha);
             }
         }
