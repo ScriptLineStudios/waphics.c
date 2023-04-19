@@ -292,15 +292,21 @@ void waphics_draw_image(Screen screen, Rectangle rect,
     for (int _y = 0; _y < rect.h*scale; _y++) {
         for (int _x = 0; _x < rect.w*scale; _x++) {
             if (_x < screen.width && _x > 0 && _y < screen.height && _y > 0) {
-                uint32_t pixel = pixels[(_y/scale * rect.w + _x/scale)];
-                uint32_t bg_pixel = screen.pixels[(_y+rect.y) * screen.width + (_x+rect.x)];
+                printf("%d\n", _y + rect.y);
+                if (_y + rect.y > 0) {
+                    uint32_t pixel = pixels[(_y/scale * rect.w + _x/scale)];
+                    uint32_t bg_pixel = screen.pixels[(_y+rect.y) * screen.width + (_x+rect.x)];
 
-                uint8_t red = lerp(RED(bg_pixel), RED(pixel), (float)ALPHA(pixel)/255);
-                uint8_t green = lerp(GREEN(bg_pixel), GREEN(pixel), (float)ALPHA(pixel)/255);
-                uint8_t blue = lerp(BLUE(bg_pixel), BLUE(pixel), (float)ALPHA(pixel)/255);
-                uint8_t alpha = lerp(ALPHA(bg_pixel), ALPHA(pixel), (float)ALPHA(pixel)/255);
-                if ((_y+rect.y) * screen.width + (_x+rect.x) < screen.width * screen.height) {
-                    screen.pixels[(_y+rect.y) * screen.width + (_x+rect.x)] = RGBA(red, green, blue, alpha);
+                    uint8_t red = lerp(RED(bg_pixel), RED(pixel), (float)ALPHA(pixel)/255);
+                    uint8_t green = lerp(GREEN(bg_pixel), GREEN(pixel), (float)ALPHA(pixel)/255);
+                    uint8_t blue = lerp(BLUE(bg_pixel), BLUE(pixel), (float)ALPHA(pixel)/255);
+                    uint8_t alpha = lerp(ALPHA(bg_pixel), ALPHA(pixel), (float)ALPHA(pixel)/255);
+                    if ((_y+rect.y) * screen.width + (_x+rect.x) < screen.width * screen.height) {
+                        // printf("x = %d y = %d\n", _x + rect.x, _y + rect.y);
+                        if (_y + rect.y > 0) {
+                            screen.pixels[(_y+rect.y) * screen.width + (_x+rect.x)] = RGBA(red, green, blue, alpha);
+                        }
+                    }
                 }
             }
         }
