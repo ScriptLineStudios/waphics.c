@@ -4,31 +4,19 @@
 #include <math.h>
 #include <emscripten.h>
 
-EM_JS(void, test, (), {
-    document.getElementById('canvas').addEventListener('keypress', handleKeyPress);
-    function handleKeyPress(e) { 
-        console.log(e);    
+EM_JS(int, test, (int key), {
+    document.onkeydown = checkKey;
+    
+    var key = -1;
+    function checkKey(e) {
+        e = e || window.event;  
+        key = e.keyCode;
+        console.log(key)
     }
+    console.log(key);
+    return key;
 });
 
-EM_JS(int, get_key, (int key), {
-    // var keyCode;
-    // console.log("getting key");
-    // document.addEventListener(
-    //     "keydown",
-    //     function(event) {
-    //         keyCode = event.keyCode;
-    //     },
-    // );
-    // document.addEventListener(
-    //     "keyup",
-    //     function(event) {
-    //         if (event.keyCode == keyCode) keyCode = null;
-    //     },
-    // );
-    // if (keyCode == key) return 1;
-    // return 0;
-});
 
 #ifndef WAPHICS_H_
 #define WAPHICS_H_
@@ -84,6 +72,10 @@ typedef struct {
 } Circle;
 
 typedef struct {
+    int x, y;
+} Vector2;
+
+typedef struct {
     unsigned int width, height;
     uint32_t *pixels;
 } Screen;
@@ -91,13 +83,14 @@ typedef struct {
 Rectangle waphics_rectangle_new(int x, int y, int width, int height);
 Circle waphics_circle_new(int x, int y, int radius);
 Screen waphics_screen_new(uint32_t *pixels, unsigned int width, unsigned int height);
+Vector2 waphics_vector2_new(int x, int y);
+
 void waphics_fill_screen(Screen screen, uint32_t color);
 void waphics_draw_rect(Screen screen, Rectangle rect, uint32_t color);
 void waphics_draw_line(Screen screen, int x1, int y1, int x2, int y2, int color);
 void waphics_draw_circle(Screen screen, Circle circle, uint32_t color);
-void waphics_draw_triangle(Screen screen, int _x1, int _y1, 
-                                  int _x2, int _y2, 
-                                  int _x3, int _y3, uint32_t color1, uint32_t color2, uint32_t color3);
+void waphics_draw_triangle(Screen screen, Vector2 p1, Vector2 p2, Vector2 p3, uint32_t color);
+void waphics_draw_triangle_3(Screen screen, Vector2 p1, Vector2 p2, Vector2 p3, uint32_t color1, uint32_t color2, uint32_t color3);
 void waphics_draw_image(Screen screen, Rectangle rect,
         uint32_t scale, uint32_t *pixels);
 void waphics_draw_image_alpha(Screen screen, Rectangle rect,
@@ -108,6 +101,8 @@ int waphics_collide_rect(Rectangle *rect1, Rectangle *rect2);
 
 #define RECT(x, y, w, h) waphics_rectangle_new(x, y, w, h)
 #define CIRCLE(x, y, r) waphics_circle_new(x, y, r)
+#define VECTOR2(x, y) waphics_vector2_new(x, y)
+
 #define SCREEN(pixels, w, h) waphics_screen_new(pixels, w, h)
 
 #endif
@@ -137,6 +132,13 @@ Circle waphics_circle_new(int x, int y, int radius) {
     circ.y = y;
     circ.r = radius;
     return circ;
+}
+
+Vector2 waphics_vector2_new(int x, int y) {
+    Vector2 vec;
+    vec.x = x;
+    vec.y = y;
+    return vec;
 }
 
 Screen waphics_screen_new(uint32_t *pixels, unsigned int width, unsigned int height) {
@@ -228,63 +230,128 @@ uint8_t max(uint8_t n1, uint8_t n2) {
     return n1;
 }
 
-uint32_t mix_colors_triangle(uint32_t color1, uint32_t color2, uint32_t color3, float strength1, float strength2, float strength3, float area) {
-    uint8_t red1 = RED(color1);
-    uint8_t green1 = GREEN(color1);
-    uint8_t blue1 = BLUE(color1);
-
-    uint8_t red2 = RED(color2);
-    uint8_t green2 = GREEN(color2);
-    uint8_t blue2 = BLUE(color2);
-
-    uint8_t red3 = RED(color3);
-    uint8_t green3 = GREEN(color3);
-    uint8_t blue3 = BLUE(color3);
-
-    if (strength1==0) strength1 = 1;
-    if (strength2==0) strength2 = 1;
-    if (strength3==0) strength3 = 1;
-
-
-    float distp1 = 1/strength1;
-    float distp2 = 1/strength2;
-    float distp3 = 1/strength3;
-    
-    uint8_t red = (uint8_t)((red1 * distp1 + red2 * distp2 + red3 * distp3) / (distp1 + distp2 + distp3));
-    uint8_t green = (uint8_t)((green1 * distp1 + green2 * distp2 + green3 * distp3) / (distp1 + distp2 + distp3));
-    uint8_t blue = (uint8_t)((blue1 * distp1 + blue2 * distp2 + blue3 * distp3) / (distp1 + distp2 + distp3));
+uint32_t mix_colors_triangle(uint32_t color1, uint32_t color2, uint32_t color3, float strength1, float strength2, float strength3) {
+    uint8_t red = (strength1 * RED(color1) + strength2 * RED(color2) + strength3 * RED(color3)) / (strength1 + strength2 + strength3);
+    uint8_t green = (strength1 * GREEN(color1) + strength2 * GREEN(color2) + strength3 * GREEN(color3)) / (strength1 + strength2 + strength3);
+    uint8_t blue = (strength1 * BLUE(color1) + strength2 * BLUE(color2) + strength3 * BLUE(color3)) / (strength1 + strength2 + strength3);
 
     return RGB(red, green, blue);
 }
 
-void waphics_draw_triangle(Screen screen, int _x1, int _y1, 
-                                  int _x2, int _y2, 
-                                  int _x3, int _y3, uint32_t color1, uint32_t color2, uint32_t color3) {
-
-    //basically http://jeffreythompson.org/collision-detection/tri-point.php
-    float x1 = (float)_x1;
-    float y1 = (float)_y1;
-    float x2 = (float)_x2;
-    float y2 = (float)_y2;
-    float x3 = (float)_x3;
-    float y3 = (float)_y3;
-    float area = fabsf(( x2-x1)*(y3-y1) - (x3-x1)*(y2-y1) );
-    for (int i = 0; i <= screen.width * screen.height; i++) {
-        float px = i % screen.width;
-        float py = i / screen.width;
-
-        float area1 =    fabsf( (x1-px)*(y2-py) - (x2-px)*(y1-py) );
-        float area2 =    fabsf( (x2-px)*(y3-py) - (x3-px)*(y2-py) );
-        float area3 =    fabsf( (x3-px)*(y1-py) - (x1-px)*(y3-py) );
-        if (area1 + area2 + area3 == area) {
-            uint32_t mixed_color = mix_colors_triangle(color1, color2, color3, dist(px, py, _x1, _y1), dist(px, py, _x2, _y2), dist(px, py, _x3, _y3), area);
-            screen.pixels[(int)py * screen.width + (int)px] = mixed_color;
-        }
-    }
+void swap(Vector2 *x, Vector2 *y) {
+    Vector2 *tmp;
+    tmp = x;
+    *x = *y;
+    *y = *tmp;
 }
 
+void waphics_draw_triangle_3(Screen screen, Vector2 p1, Vector2 p2, Vector2 p3, uint32_t color1, uint32_t color2, uint32_t color3) {
+    Vector2 op1 = p1;
+    Vector2 op2 = p2;
+    Vector2 op3 = p3;
+
+    if (p2.y < p1.y) {
+       swap(&p1, &p2);
+    }
+ 
+    if (p3.y < p2.y) {
+       swap(&p2, &p3);
+       if (p2.y < p1.y)
+          swap(&p2, &p1);
+    }
+    
+    int xs = p1.x;
+    int ys = p1.y; 
+
+    int xm = p2.x;
+    int ym = p2.y; 
+
+    int xe = p3.x;
+    int ye = p3.y; 
+    
+    float s1 = (xe - xs) / ((ye - ys) + 0.000000000001);
+    float s2 = (xm - xs) / ((ym - ys) + 0.000000000001);
+    float s3 = (xe - xm) / ((ye - ym) + 0.000000000001);
+    for (int y = ys; y < ye; y++) {
+        int x1 = xs + (int)((y - ys) * s1);
+
+        int x2;
+        if (y < ym)
+            x2 = xs + (int)((y - ys) * s2);
+        else 
+            x2 = xm + (int)((y - ym) * s3);
+        
+        if (x1 > x2) {
+            int tmp = x1;
+            x1 = x2;
+            x2 = tmp;
+        }
+
+        for (int x = x1; x < x2; x++) {
+            float denom = ((op2.y - op3.y) * (op1.x - op3.x) + (op3.x - op2.x) * (op1.y - op3.y));
+            float barya = ((op2.y - op3.y) * (x - op3.x) + (op3.x - op2.x) * (y - op3.y)) / denom;
+            float baryb = ((op3.y - op1.y) * (x - op3.x) + (op1.x - op3.x) * (y - op3.y)) / denom;
+            float baryc = 1 - barya - baryb;
+            if (x <= screen.width && x >= 0) {
+                if (y <= screen.height && y >= 0) {
+                    screen.pixels[y * screen.width + x] = mix_colors_triangle(color1, color2, color3, barya, baryb, baryc);
+                }
+            }
+        }   
+    }
+}   
+
+void waphics_draw_triangle(Screen screen, Vector2 p1, Vector2 p2, Vector2 p3, uint32_t color) {
+    if (p2.y < p1.y) {
+       swap(&p1, &p2);
+    }
+ 
+    if (p3.y < p2.y) {
+       swap(&p2, &p3);
+       if (p2.y < p1.y)
+          swap(&p2, &p1);
+    }
+    
+    int xs = p1.x;
+    int ys = p1.y; 
+
+    int xm = p2.x;
+    int ym = p2.y; 
+
+    int xe = p3.x;
+    int ye = p3.y; 
+    
+    float s1 = (xe - xs) / ((ye - ys) + 0.000000000001);
+    float s2 = (xm - xs) / ((ym - ys) + 0.000000000001);
+    float s3 = (xe - xm) / ((ye - ym) + 0.000000000001);
+
+    for (int y = ys; y < ye; y++) {
+        int x1 = xs + (int)((y - ys) * s1);
+
+        int x2;
+        if (y < ym)
+            x2 = xs + (int)((y - ys) * s2);
+        else 
+            x2 = xm + (int)((y - ym) * s3);
+        
+        if (x1 > x2) {
+            int tmp = x1;
+            x1 = x2;
+            x2 = tmp;
+        }
+
+        for (int x = x1; x < x2; x++) {
+            if (x <= screen.width && x >= 0) {
+                if (y <= screen.height && y >= 0) {
+                    screen.pixels[y * screen.width + x] = color;
+                }
+            }
+        }
+    }
+}   
+
 float lerp(uint32_t v0, uint32_t v1, float t) {
-  return (1 - t) * v0 + t * v1;
+    return (1 - t) * v0 + t * v1;
 }
 
 void waphics_draw_image(Screen screen, Rectangle rect,

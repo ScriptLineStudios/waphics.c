@@ -34,6 +34,12 @@ int main(int argc, char **argv) {
             Module.ccall("init");
             window.requestAnimationFrame(_render);
         }
+
+        document.onkeydown = checkKey;
+        function checkKey(e) {
+            e = e || window.event;  
+            console.log(e)
+        }
     );
 
     FILE *js_file = fopen("javascript.js", "w");

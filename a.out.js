@@ -1745,8 +1745,7 @@ var tempI64;
 var ASM_CONSTS = {
   
 };
-function get_key(key){ }
-function test(){ document.getElementById('canvas').addEventListener('keypress', handleKeyPress); function handleKeyPress(e) { console.log(e); } }
+function test(key){ document.onkeydown = checkKey; var key = -1; function checkKey(e) { e = e || window.event; key = e.keyCode; console.log(key) } console.log(key); return key; }
 
 
 
@@ -1844,10 +1843,6 @@ function test(){ document.getElementById('canvas').addEventListener('keypress', 
       return demangleAll(js);
     }
 
-  function _emscripten_memcpy_big(dest, src, num) {
-      HEAPU8.copyWithin(dest, src, src + num);
-    }
-
   function flush_NO_FILESYSTEM() {
       // flush anything remaining in the buffers during shutdown
       ___stdio_exit();
@@ -1928,9 +1923,7 @@ function intArrayToString(array) {
 
 
 var asmLibraryArg = {
-  "emscripten_memcpy_big": _emscripten_memcpy_big,
   "fd_write": _fd_write,
-  "get_key": get_key,
   "setTempRet0": _setTempRet0,
   "test": test
 };

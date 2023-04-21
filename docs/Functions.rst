@@ -27,6 +27,7 @@ Returns a new Screen.
 
     #define RECT(x, y, w, h) waphics_rectangle_new(x, y, w, h)
     #define CIRCLE(x, y, r) waphics_circle_new(x, y, r)
+    #define VECTOR2(x, y) waphics_vector2_new(x, y, z)
     #define SCREEN(pixels, w, h) waphics_screen_new(pixels, w, h)
 
 .. code-block:: c
@@ -67,11 +68,15 @@ Draws a circle from the given Circle instance.
 
 .. code-block:: c
 
-  void waphics_draw_triangle(Screen screen, int _x1, int _y1, 
-                                    int _x2, int _y2, 
-                                    int _x3, int _y3, uint32_t color1, uint32_t color2, uint32_t color3);
+  void waphics_draw_triangle(Screen screen, Vector2 p1, Vector2 p2, Vector2 p3, uint32_t color);
 
-Draws a triangle with points (x1, y1); (x2, y2); (x3, y3) with corrosponding colors at the points.
+Draws a triangle with points (x1, y1); (x2, y2); (x3, y3) with a flat color.
+
+.. code-block:: c
+
+  void waphics_draw_triangle_3(Screen screen, Vector2 p1, Vector2 p2, Vector2 p3, uint32_t color1, uint32_t color2, uint32_t color3);
+
+Draws a triangle with points (x1, y1); (x2, y2); (x3, y3) with a barycentric color interpolation between the 3 colors.
 
 .. code-block:: c
 
