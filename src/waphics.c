@@ -4,28 +4,15 @@
 #include <math.h>
 #include <emscripten.h>
 
-EM_JS(int, test, (int key), {
-    document.onkeydown = checkKey;
-    
-    var key = -1;
-    function checkKey(e) {
-        e = e || window.event;  
-        key = e.keyCode;
-        console.log(key)
-    }
-    console.log(key);
-    return key;
-});
+#define STB_IMAGE_IMPLEMENTATION
+#include "include/external/stbi_image.h"
 
+EM_JS(int, get_key, (int code), {
+    return Module[code] == 1;
+});
 
 #ifndef WAPHICS_H_
 #define WAPHICS_H_
-extern int get_key(int key_code);
-extern uint32_t jfloor(int); 
-extern double jsqrt(int); 
-extern void jprint(float); 
-extern float jfabsf(float); 
-extern float jsin(float); 
 extern void play_sound(const char *path); 
 
 #define KEY_A 65
@@ -78,22 +65,22 @@ typedef struct {
 typedef struct {
     unsigned int width, height;
     uint32_t *pixels;
-} Screen;
+} Surface;
 
 Rectangle waphics_rectangle_new(int x, int y, int width, int height);
 Circle waphics_circle_new(int x, int y, int radius);
-Screen waphics_screen_new(uint32_t *pixels, unsigned int width, unsigned int height);
+Surface waphics_surface_new(uint32_t *pixels, unsigned int width, unsigned int height);
+Surface waphics_surface_from_file(const char *filename);
 Vector2 waphics_vector2_new(int x, int y);
 
-void waphics_fill_screen(Screen screen, uint32_t color);
-void waphics_draw_rect(Screen screen, Rectangle rect, uint32_t color);
-void waphics_draw_line(Screen screen, int x1, int y1, int x2, int y2, int color);
-void waphics_draw_circle(Screen screen, Circle circle, uint32_t color);
-void waphics_draw_triangle(Screen screen, Vector2 p1, Vector2 p2, Vector2 p3, uint32_t color);
-void waphics_draw_triangle_3(Screen screen, Vector2 p1, Vector2 p2, Vector2 p3, uint32_t color1, uint32_t color2, uint32_t color3);
-void waphics_draw_image(Screen screen, Rectangle rect,
-        uint32_t scale, uint32_t *pixels);
-void waphics_draw_image_alpha(Screen screen, Rectangle rect,
+void waphics_fill_display(Surface display, uint32_t color);
+void waphics_draw_rect(Surface display, Rectangle rect, uint32_t color);
+void waphics_draw_line(Surface display, int x1, int y1, int x2, int y2, int color);
+void waphics_draw_circle(Surface display, Circle circle, uint32_t color);
+void waphics_draw_triangle(Surface display, Vector2 p1, Vector2 p2, Vector2 p3, uint32_t color);
+void waphics_draw_triangle_3(Surface display, Vector2 p1, Vector2 p2, Vector2 p3, uint32_t color1, uint32_t color2, uint32_t color3);
+void waphics_draw_image(Surface display, Vector2 position, Surface image);
+void waphics_draw_image_alpha(Surface display, Rectangle rect,
         uint32_t scale, uint32_t *pixels, uint32_t alpha);
 uint32_t waphics_rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
 uint32_t waphics_rgb(uint32_t r, uint32_t g, uint32_t b);
@@ -103,7 +90,7 @@ int waphics_collide_rect(Rectangle *rect1, Rectangle *rect2);
 #define CIRCLE(x, y, r) waphics_circle_new(x, y, r)
 #define VECTOR2(x, y) waphics_vector2_new(x, y)
 
-#define SCREEN(pixels, w, h) waphics_screen_new(pixels, w, h)
+#define SURFACE(pixels, w, h) waphics_surface_new(pixels, w, h)
 
 #endif
 
@@ -141,9 +128,19 @@ Vector2 waphics_vector2_new(int x, int y) {
     return vec;
 }
 
-Screen waphics_screen_new(uint32_t *pixels, unsigned int width, unsigned int height) {
-    Screen screen = {.width=width,  .height=height, .pixels=pixels};
-    return screen;
+Surface waphics_surface_new(uint32_t *pixels, unsigned int width, unsigned int height) {
+    Surface display = {.width=width,  .height=height, .pixels=pixels};
+    return display;
+}
+
+Surface waphics_surface_from_file(const char *filename) {
+    int width, height, channels;
+    uint32_t *pixels = (uint32_t *)stbi_load(filename, &width, &height, &channels, 0);
+    if (pixels == NULL) {
+        printf("image creation failed %p\n", pixels);
+    } 
+    printf("image creation success %p\n", pixels);
+    return waphics_surface_new(pixels, width, height);
 }
 
 int waphics_collide_rect(Rectangle *rect1, Rectangle *rect2) {
@@ -154,55 +151,55 @@ int waphics_collide_rect(Rectangle *rect1, Rectangle *rect2) {
     return 0;
 }
 
-void waphics_fill_screen(Screen screen, uint32_t color) {
-    for (unsigned int x = 0; x < screen.width; x++) {
-        for (unsigned int y = 0; y < screen.height; y++) {
-            screen.pixels[y * screen.width + x] = color;
+void waphics_fill_display(Surface display, uint32_t color) {
+    for (unsigned int x = 0; x < display.width; x++) {
+        for (unsigned int y = 0; y < display.height; y++) {
+            display.pixels[y * display.width + x] = color;
         }
     }
 }   
 
-void waphics_draw_rect(Screen screen, Rectangle rect, uint32_t color) {
+void waphics_draw_rect(Surface display, Rectangle rect, uint32_t color) {
     for (int _y = rect.y; _y < rect.h+rect.y; _y++) {
         for (int _x = rect.x; _x < rect.w+rect.x; _x++) {
-            if (_x < screen.width && _x > 0 && _y < screen.height && _y > 0) {
-                screen.pixels[_y * screen.width + _x] = color;
+            if (_x < display.width && _x > 0 && _y < display.height && _y > 0) {
+                display.pixels[_y * display.width + _x] = color;
             }
         }
     }
 }   
 
-void waphics_draw_line(Screen screen, int x1, int y1, int x2, int y2, int color) {
+void waphics_draw_line(Surface display, int x1, int y1, int x2, int y2, int color) {
     //behold the worlds worst line rendering algorithm
     double m = ((float)y2 - (float)y1) / (((float)x2 - (float)x1)+0.0000000001);
     double c = (float)y1 - m * (float)x1;
     
-    for (int i = 0; i <= screen.width * screen.height; i++) {
-        float x = i % screen.width;
-        float y = i / screen.width;
+    for (int i = 0; i <= display.width * display.height; i++) {
+        float x = i % display.width;
+        float y = i / display.width;
         if (m > 0) {
             if (x >= x1 && y >= y1 && x <= x2 && y <= y2) {
                 if (y - (m * x + c) < m*2 && y - (m * x + c) > -m*2) {
-                    screen.pixels[(int)y * screen.width + (int)x] = color;
+                    display.pixels[(int)y * display.width + (int)x] = color;
                 }
             }
 
             if (x <= x1 && y <= y1 && y >= y2 && x >= x2) {
                 if (y - (m * x + c) < m*2 && y - (m * x + c) > -m*2) {
-                    screen.pixels[(int)y * screen.width + (int)x] = color;
+                    display.pixels[(int)y * display.width + (int)x] = color;
                 }
             }
         }
         else {
             if (x <= x1 && y >= y1 && y <= y2 && x >= x2) {
                 if (y - (m * x + c) > m*2 && y - (m * x + c) < -m*2) {
-                    screen.pixels[(int)y * screen.width + (int)x] = color;
+                    display.pixels[(int)y * display.width + (int)x] = color;
                 }
             }
 
             if (y <= y1 && x >= x1 && x <= x2) {
                 if (y - (m * x + c) > m*2 && y - (m * x + c) < -m*2) {
-                    screen.pixels[(int)y * screen.width + (int)x] = color;
+                    display.pixels[(int)y * display.width + (int)x] = color;
                 }
             }
         }
@@ -213,12 +210,12 @@ float dist(int x1, int y1, int x2, int y2) {
     return (sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)));
 }
 
-void waphics_draw_circle(Screen screen, Circle circle, uint32_t color) {
+void waphics_draw_circle(Surface display, Circle circle, uint32_t color) {
     for (int w = circle.x - circle.r; w < circle.x + circle.r; w++) {
         for (int h = circle.y - circle.r; h < circle.y + circle.r; h++) {
-            if (circle.x < screen.width && circle.x > 0 && circle.y < screen.height && circle.y > 0) {
+            if (circle.x < display.width && circle.x > 0 && circle.y < display.height && circle.y > 0) {
                 if (dist((int)circle.x, (int)circle.y, (int)w, (int)h) < circle.r) {
-                    screen.pixels[(int)h * screen.width + (int)w] = color;
+                    display.pixels[(int)h * display.width + (int)w] = color;
                 }
             }
         }
@@ -245,7 +242,7 @@ void swap(Vector2 *x, Vector2 *y) {
     *y = *tmp;
 }
 
-void waphics_draw_triangle_3(Screen screen, Vector2 p1, Vector2 p2, Vector2 p3, uint32_t color1, uint32_t color2, uint32_t color3) {
+void waphics_draw_triangle_3(Surface display, Vector2 p1, Vector2 p2, Vector2 p3, uint32_t color1, uint32_t color2, uint32_t color3) {
     Vector2 op1 = p1;
     Vector2 op2 = p2;
     Vector2 op3 = p3;
@@ -292,16 +289,16 @@ void waphics_draw_triangle_3(Screen screen, Vector2 p1, Vector2 p2, Vector2 p3, 
             float barya = ((op2.y - op3.y) * (x - op3.x) + (op3.x - op2.x) * (y - op3.y)) / denom;
             float baryb = ((op3.y - op1.y) * (x - op3.x) + (op1.x - op3.x) * (y - op3.y)) / denom;
             float baryc = 1 - barya - baryb;
-            if (x <= screen.width && x >= 0) {
-                if (y <= screen.height && y >= 0) {
-                    screen.pixels[y * screen.width + x] = mix_colors_triangle(color1, color2, color3, barya, baryb, baryc);
+            if (x <= display.width && x >= 0) {
+                if (y <= display.height && y >= 0) {
+                    display.pixels[y * display.width + x] = mix_colors_triangle(color1, color2, color3, barya, baryb, baryc);
                 }
             }
         }   
     }
 }   
 
-void waphics_draw_triangle(Screen screen, Vector2 p1, Vector2 p2, Vector2 p3, uint32_t color) {
+void waphics_draw_triangle(Surface display, Vector2 p1, Vector2 p2, Vector2 p3, uint32_t color) {
     if (p2.y < p1.y) {
        swap(&p1, &p2);
     }
@@ -341,9 +338,9 @@ void waphics_draw_triangle(Screen screen, Vector2 p1, Vector2 p2, Vector2 p3, ui
         }
 
         for (int x = x1; x < x2; x++) {
-            if (x <= screen.width && x >= 0) {
-                if (y <= screen.height && y >= 0) {
-                    screen.pixels[y * screen.width + x] = color;
+            if (x <= display.width && x >= 0) {
+                if (y <= display.height && y >= 0) {
+                    display.pixels[y * display.width + x] = color;
                 }
             }
         }
@@ -354,46 +351,54 @@ float lerp(uint32_t v0, uint32_t v1, float t) {
     return (1 - t) * v0 + t * v1;
 }
 
-void waphics_draw_image(Screen screen, Rectangle rect,
-        uint32_t scale, uint32_t *pixels) {
-    for (int _y = 0; _y < rect.h*scale; _y++) {
-        for (int _x = 0; _x < rect.w*scale; _x++) {
-            if (_x < screen.width && _x > 0 && _y < screen.height && _y > 0) {
-                printf("%d\n", _y + rect.y);
-                if (_y + rect.y > 0) {
-                    uint32_t pixel = pixels[(_y/scale * rect.w + _x/scale)];
-                    uint32_t bg_pixel = screen.pixels[(_y+rect.y) * screen.width + (_x+rect.x)];
-
-                    uint8_t red = lerp(RED(bg_pixel), RED(pixel), (float)ALPHA(pixel)/255);
-                    uint8_t green = lerp(GREEN(bg_pixel), GREEN(pixel), (float)ALPHA(pixel)/255);
-                    uint8_t blue = lerp(BLUE(bg_pixel), BLUE(pixel), (float)ALPHA(pixel)/255);
-                    uint8_t alpha = lerp(ALPHA(bg_pixel), ALPHA(pixel), (float)ALPHA(pixel)/255);
-                    if ((_y+rect.y) * screen.width + (_x+rect.x) < screen.width * screen.height) {
-                        // printf("x = %d y = %d\n", _x + rect.x, _y + rect.y);
-                        if (_y + rect.y > 0) {
-                            screen.pixels[(_y+rect.y) * screen.width + (_x+rect.x)] = RGBA(red, green, blue, alpha);
-                        }
-                    }
-                }
-            }
+void waphics_draw_image(Surface display, Vector2 position, Surface image) {
+    for (int _y = 0; _y < image.height; _y++) {
+        for (int _x = 0; _x < image.width; _x++) {
+            uint32_t pixel = image.pixels[_y * image.width + _x];
+            display.pixels[(_y+position.y) * display.width + (_x + position.x)] = pixel;
         }
     }
 }
+// void waphics_draw_image(Surface display, Rectangle rect,
+//         uint32_t scale, uint32_t *pixels) {
+//     for (int _y = 0; _y < rect.h*scale; _y++) {
+//         for (int _x = 0; _x < rect.w*scale; _x++) {
+//             if (_x < display.width && _x > 0 && _y < display.height && _y > 0) {
+//                 printf("%d\n", _y + rect.y);
+//                 if (_y + rect.y > 0) {
+//                     uint32_t pixel = pixels[(_y/scale * rect.w + _x/scale)];
+//                     uint32_t bg_pixel = display.pixels[(_y+rect.y) * display.width + (_x+rect.x)];
 
-void waphics_draw_image_alpha(Screen screen, Rectangle rect,
+//                     uint8_t red = lerp(RED(bg_pixel), RED(pixel), (float)ALPHA(pixel)/255);
+//                     uint8_t green = lerp(GREEN(bg_pixel), GREEN(pixel), (float)ALPHA(pixel)/255);
+//                     uint8_t blue = lerp(BLUE(bg_pixel), BLUE(pixel), (float)ALPHA(pixel)/255);
+//                     uint8_t alpha = lerp(ALPHA(bg_pixel), ALPHA(pixel), (float)ALPHA(pixel)/255);
+//                     if ((_y+rect.y) * display.width + (_x+rect.x) < display.width * display.height) {
+//                         // printf("x = %d y = %d\n", _x + rect.x, _y + rect.y);
+//                         if (_y + rect.y > 0) {
+//                             display.pixels[(_y+rect.y) * display.width + (_x+rect.x)] = RGBA(red, green, blue, alpha);
+//                         }
+//                     }
+//                 }
+//             }
+//         }
+//     }
+// }
+
+void waphics_draw_image_alpha(Surface display, Rectangle rect,
         uint32_t scale, uint32_t *pixels, uint32_t alpha) {
     if (alpha > 255) alpha = 255;
     for (int _y = 0; _y < rect.h*scale; _y++) {
         for (int _x = 0; _x < rect.w*scale; _x++) {
-            if (_x < screen.width && _x > 0 && _y < screen.height && _y > 0) {
+            if (_x < display.width && _x > 0 && _y < display.height && _y > 0) {
                 uint32_t pixel = pixels[(_y/scale * rect.w + _x/scale)];
-                uint32_t bg_pixel = screen.pixels[(_y+rect.y) * screen.width + (_x+rect.x)];
+                uint32_t bg_pixel = display.pixels[(_y+rect.y) * display.width + (_x+rect.x)];
 
                 uint8_t red = lerp(RED(bg_pixel), RED(pixel), (float)alpha/255);
                 uint8_t green = lerp(GREEN(bg_pixel), GREEN(pixel), (float)alpha/255);
                 uint8_t blue = lerp(BLUE(bg_pixel), BLUE(pixel), (float)alpha/255);
                 uint8_t alpha = lerp(ALPHA(bg_pixel), ALPHA(pixel), (float)alpha/255);
-                screen.pixels[(_y+rect.y) * screen.width + (_x+rect.x)] = RGBA(red, green, blue, alpha);
+                display.pixels[(_y+rect.y) * display.width + (_x+rect.x)] = RGBA(red, green, blue, alpha);
             }
         }
     }

@@ -1,0 +1,7 @@
+/home/scriptline/programming/C/build/CMakeFiles/waphics.dir
+/home/scriptline/programming/C/build/CMakeFiles/edit_cache.dir
+/home/scriptline/programming/C/build/CMakeFiles/rebuild_cache.dir
+/home/scriptline/programming/C/build/CMakeFiles/list_install_components.dir
+/home/scriptline/programming/C/build/CMakeFiles/install.dir
+/home/scriptline/programming/C/build/CMakeFiles/install/local.dir
+/home/scriptline/programming/C/build/CMakeFiles/install/strip.dir

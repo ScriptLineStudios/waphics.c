@@ -20,16 +20,16 @@ Waphics is simple to use. Once installed simply create a new C file and add an i
     #define HEIGHT 600
 
     uint32_t pixels[WIDTH * HEIGHT];
-    Screen screen;
+    Surface display;
 
     void init(void) {
-        screen = SCREEN(pixels, WIDTH, HEIGHT);
+        display = SCREEN(pixels, WIDTH, HEIGHT);
     }
 
     uint32_t *run(void) {
       // your code will go here...
 
-      return screen.pixels;
+      return display.pixels;
     }
     
 From there you are free to use waphics functionaltiy on the web! Once you are ready to compile to the web. Simpliy run:
@@ -73,10 +73,10 @@ This header file contains all the information needed to used the image on the we
     uint32_t *run(void) {
       // other code
 
-      //void waphics_draw_image(Screen screen, Rectangle rect, uint32_t scale, uint32_t *pixels);
-      waphics_draw_image(screen, RECT(xpos, ypos, <image_name>_width, <image_name>_height), 1, <image_name>_pixels);
+      //void waphics_draw_image(Surface display, Rectangle rect, uint32_t scale, uint32_t *pixels);
+      waphics_draw_image(display, RECT(xpos, ypos, <image_name>_width, <image_name>_height), 1, <image_name>_pixels);
 
-      return screen.pixels;
+      return display.pixels;
     }
     
 Keyboard Inputs

@@ -15,9 +15,9 @@ Returns a new Circle with the specified x, y and radius.
 
 .. code-block:: c
 
-  Screen waphics_screen_new(uint32_t *pixels, unsigned int width, unsigned int height);
+  Surface waphics_display_new(uint32_t *pixels, unsigned int width, unsigned int height);
 
-Returns a new Screen.
+Returns a new Surface.
 
 .. note::
 
@@ -28,13 +28,13 @@ Returns a new Screen.
     #define RECT(x, y, w, h) waphics_rectangle_new(x, y, w, h)
     #define CIRCLE(x, y, r) waphics_circle_new(x, y, r)
     #define VECTOR2(x, y) waphics_vector2_new(x, y, z)
-    #define SCREEN(pixels, w, h) waphics_screen_new(pixels, w, h)
+    #define SCREEN(pixels, w, h) waphics_display_new(pixels, w, h)
 
 .. code-block:: c
 
-  void waphics_fill_screen(Screen screen, uint32_t color);
+  void waphics_fill_display(Surface display, uint32_t color);
 
-Fills the specified Screen with the specified color
+Fills the specified Surface with the specified color
 
 .. note::
   
@@ -50,37 +50,37 @@ Fills the specified Screen with the specified color
 
 .. code-block:: c
 
-  void waphics_draw_rect(Screen screen, Rectangle rect, uint32_t color);
+  void waphics_draw_rect(Surface display, Rectangle rect, uint32_t color);
 
 Draws a rectangle with the given color 
 
 .. code-block:: c
 
-  void waphics_draw_line(Screen screen, int x1, int y1, int x2, int y2, int color);
+  void waphics_draw_line(Surface display, int x1, int y1, int x2, int y2, int color);
 
 Draws a line from point (x1, y1) to (x2, y2)
 
 .. code-block:: c
 
-  void waphics_draw_circle(Screen screen, Circle circle, uint32_t color);
+  void waphics_draw_circle(Surface display, Circle circle, uint32_t color);
 
 Draws a circle from the given Circle instance.
 
 .. code-block:: c
 
-  void waphics_draw_triangle(Screen screen, Vector2 p1, Vector2 p2, Vector2 p3, uint32_t color);
+  void waphics_draw_triangle(Surface display, Vector2 p1, Vector2 p2, Vector2 p3, uint32_t color);
 
 Draws a triangle with points (x1, y1); (x2, y2); (x3, y3) with a flat color.
 
 .. code-block:: c
 
-  void waphics_draw_triangle_3(Screen screen, Vector2 p1, Vector2 p2, Vector2 p3, uint32_t color1, uint32_t color2, uint32_t color3);
+  void waphics_draw_triangle_3(Surface display, Vector2 p1, Vector2 p2, Vector2 p3, uint32_t color1, uint32_t color2, uint32_t color3);
 
 Draws a triangle with points (x1, y1); (x2, y2); (x3, y3) with a barycentric color interpolation between the 3 colors.
 
 .. code-block:: c
 
-  void waphics_draw_image(Screen screen, Rectangle rect,
+  void waphics_draw_image(Surface display, Rectangle rect,
           uint32_t scale, uint32_t *pixels);
          
 Draws an image from the gievn pixels scaled to the specified scale using the (x, y) coordiantes from the Rectangle for the top left of the image.
@@ -92,7 +92,7 @@ Draws an image from the gievn pixels scaled to the specified scale using the (x,
   
 .. code-block:: c
 
-    void waphics_draw_image_alpha(Screen screen, Rectangle rect,
+    void waphics_draw_image_alpha(Surface display, Rectangle rect,
           uint32_t scale, uint32_t *pixels, uint32_t alpha);
           
  Identical to ``waphics_draw_image`` execept for blending each pixel with the specified alpha value.

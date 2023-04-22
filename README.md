@@ -21,29 +21,29 @@ Waphics allows you to easily create video games in C and export them to the web 
 #define HEIGHT 600
 
 uint32_t pixels[WIDTH * HEIGHT];
-Screen screen;
+Surface display;
 
 void init(void) {
-    screen = SCREEN(pixels, WIDTH, HEIGHT);
+    display = SCREEN(pixels, WIDTH, HEIGHT);
 }
 
 static int x;
 
 uint32_t *run(void) {
-    //fill the screen with black
-    waphics_fill_screen(screen, RGB(0, 0, 0));
+    //fill the display with black
+    waphics_fill_display(display, RGB(0, 0, 0));
     //draw a red rectangle
-    waphics_draw_rect(screen, RECT(0, 0, 50, 50), RGB(255, 0, 0));
+    waphics_draw_rect(display, RECT(0, 0, 50, 50), RGB(255, 0, 0));
     //draw a blue circle
-    waphics_draw_circle(screen, CIRCLE(100, 100, 50), RGB(0, 100, 100));
+    waphics_draw_circle(display, CIRCLE(100, 100, 50), RGB(0, 100, 100));
     //draw an image
-    waphics_draw_image(screen, RECT(x, 0, 16, 16), 10, block_pixels);
+    waphics_draw_image(display, RECT(x, 0, 16, 16), 10, block_pixels);
 
     if (get_key(KEY_D)) x+=10;
     if (get_key(KEY_A)) x-=10;
 
 
-    return screen.pixels;
+    return display.pixels;
 }
 ```
 
@@ -75,16 +75,16 @@ Waphics is simple to use. Once installed simply create a new C file and add an i
 #define HEIGHT 600
 
 uint32_t pixels[WIDTH * HEIGHT];
-Screen screen;
+Surface display;
 
 void init(void) {
-    screen = SCREEN(pixels, WIDTH, HEIGHT);
+    display = SCREEN(pixels, WIDTH, HEIGHT);
 }
 
 uint32_t *run(void) {
   // your code will go here...
   
-  return screen.pixels;
+  return display.pixels;
 }
 ```
 
@@ -122,10 +122,10 @@ This header file contains all the information needed to used the image on the we
 uint32_t *run(void) {
   // other code
   
-  //void waphics_draw_image(Screen screen, Rectangle rect, uint32_t scale, uint32_t *pixels);
-  waphics_draw_image(screen, RECT(xpos, ypos, <image_name>_width, <image_name>_height), 1, <image_name>_pixels);
+  //void waphics_draw_image(Surface display, Rectangle rect, uint32_t scale, uint32_t *pixels);
+  waphics_draw_image(display, RECT(xpos, ypos, <image_name>_width, <image_name>_height), 1, <image_name>_pixels);
     
-  return screen.pixels;
+  return display.pixels;
 }
 ```
 

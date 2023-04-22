@@ -16,6 +16,21 @@ int main(int argc, char **argv) {
     }
 
     const char *javascript = JAVASCRIPT(
+        for (let i = 0; i < 24; i++) {
+            Module[97 + i] = 0;
+        }
+
+        function down(e) {
+            Module[e.keyCode] = 1;
+        }
+
+        function up(e) {
+            Module[e.keyCode] = 0;
+        }
+
+        document.addEventListener("keydown", down);
+        document.addEventListener("keyup", up);
+
         function _render() {        
             var c = document.getElementById("canvas" ,{"alpha": false});
             var ctx = c.getContext("2d");
@@ -28,17 +43,12 @@ int main(int argc, char **argv) {
             var img = new ImageData(buffer, width);   
             ctx.putImageData(img, 0, 0);
             window.requestAnimationFrame(_render);
+            Module["key"] = null;
         }
 
         Module.onRuntimeInitialized = () => {
             Module.ccall("init");
             window.requestAnimationFrame(_render);
-        }
-
-        document.onkeydown = checkKey;
-        function checkKey(e) {
-            e = e || window.event;  
-            console.log(e)
         }
     );
 
@@ -48,7 +58,7 @@ int main(int argc, char **argv) {
 
     const char *html = "<script src='a.out.js'></script><script>let width = %d;\nlet height = %d;\nlet channels = 4;\n</script><canvas id='canvas' width=%d height=%d></canvas><script src='javascript.js'></script>";
     char string[200];
-    snprintf(string, 200, "emcc %s -sEXPORTED_FUNCTIONS=_render,_init -sEXPORTED_RUNTIME_METHODS=ccall,cwrap", argv[1]);
+    snprintf(string, 200, "emcc %s -sEXPORTED_FUNCTIONS=_render,_init -sEXPORTED_RUNTIME_METHODS=ccall,cwrap --preload-file assets/*/*.png", argv[1]);
     system(string);    
     FILE *file = fopen("index.html", "w");
     fprintf(file, html, atoi(argv[2]), atoi(argv[3]), atoi(argv[2]), atoi(argv[3]));
