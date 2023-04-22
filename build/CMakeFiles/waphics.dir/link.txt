@@ -1,1 +1,0 @@
-/usr/bin/cc CMakeFiles/waphics.dir/src/builder.c.o -o waphics 

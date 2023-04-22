@@ -1,1 +1,0 @@
-/usr/bin/cc CMakeFiles/test_setup.dir/test_setup.c.o -o test_setup  -lm 

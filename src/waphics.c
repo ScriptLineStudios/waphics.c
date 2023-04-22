@@ -161,7 +161,7 @@ void waphics_fill_display(Surface display, uint32_t color) {
 void waphics_draw_rect(Surface display, Rectangle rect, uint32_t color) {
     for (int _y = rect.y; _y < rect.h+rect.y; _y++) {
         for (int _x = rect.x; _x < rect.w+rect.x; _x++) {
-            if (_x < display.width && _x > 0 && _y < display.height && _y > 0) {
+            if (_x < display.width && _x >= 0 && _y < display.height && _y >= 0) {
                 display.pixels[_y * display.width + _x] = color;
             }
         }
