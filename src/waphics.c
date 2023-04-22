@@ -221,11 +221,6 @@ void waphics_draw_circle(Surface display, Circle circle, uint32_t color) {
     }
 }
 
-uint8_t max(uint8_t n1, uint8_t n2) {
-    if (n1 >= n2) return n1;
-    return n1;
-}
-
 uint32_t mix_colors_triangle(uint32_t color1, uint32_t color2, uint32_t color3, float strength1, float strength2, float strength3) {
     uint8_t red = (strength1 * RED(color1) + strength2 * RED(color2) + strength3 * RED(color3)) / (strength1 + strength2 + strength3);
     uint8_t green = (strength1 * GREEN(color1) + strength2 * GREEN(color2) + strength3 * GREEN(color3)) / (strength1 + strength2 + strength3);
