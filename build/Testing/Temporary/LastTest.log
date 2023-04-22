@@ -1,0 +1,18 @@
+Start testing: Apr 22 17:06 CAT
+----------------------------------------------------------
+1/1 Testing: setup_gtest
+1/1 Test: setup_gtest
+Command: "/home/scriptline/programming/waphics.c/build/tests/test_setup"
+Directory: /home/scriptline/programming/waphics.c/build/tests
+"setup_gtest" start time: Apr 22 17:06 CAT
+Output:
+----------------------------------------------------------
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"setup_gtest" end time: Apr 22 17:06 CAT
+"setup_gtest" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Apr 22 17:06 CAT
