@@ -2,14 +2,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+
+#ifdef EMSCRIPTEN
 #include <emscripten.h>
+EM_JS(int, get_key, (int code), {
+    return Module[code] == 1;
+});
+#endif
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "include/external/stbi_image.h"
 
-EM_JS(int, get_key, (int code), {
-    return Module[code] == 1;
-});
 
 #ifndef WAPHICS_H_
 #define WAPHICS_H_

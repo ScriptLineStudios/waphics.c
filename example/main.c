@@ -1,4 +1,5 @@
 #define WAPHICS_IMPLEMENTATION
+#define EMSCRIPTEN
 #include "../src/waphics.c"
 
 #include "../assets/block.h"

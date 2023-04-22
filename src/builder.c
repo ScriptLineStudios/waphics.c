@@ -3,19 +3,41 @@
 #include <string.h>
 #include <assert.h>
 
-#define JAVASCRIPT(src) #src
+#define STR_IMPLEMENTATION
+#include "include/external/str_header.h"
+
+#define STRING(src) #src
 
 void usage(void) {
     printf("Usage: waphics <file.c> <width> <height>\n");
     exit(1);
 }
 
+static const char *c = STRING(
+    #include <stdio.h>
+
+);
+
 int main(int argc, char **argv) {
+    if (!strcmp(argv[1], "setup")) {
+        printf("setting up new project...\n");
+        
+        // mkdir("assets");
+        // mkdir("assets/images");
+        // mkdir("assets/sounds");
+
+        // FILE *c_file = fopen("main.c", "w");
+        // fprintf(c_file, c);
+        // fclose(c_file);
+        
+        // exit(0);
+    }
+    
     if (argc < 4) {
         usage();
     }
 
-    const char *javascript = JAVASCRIPT(
+    const char *javascript = STRING(
         for (let i = 0; i < 24; i++) {
             Module[97 + i] = 0;
         }
