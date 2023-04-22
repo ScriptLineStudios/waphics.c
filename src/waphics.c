@@ -136,10 +136,6 @@ Surface waphics_surface_new(uint32_t *pixels, unsigned int width, unsigned int h
 Surface waphics_surface_from_file(const char *filename) {
     int width, height, channels;
     uint32_t *pixels = (uint32_t *)stbi_load(filename, &width, &height, &channels, 0);
-    if (pixels == NULL) {
-        printf("image creation failed %p\n", pixels);
-    } 
-    printf("image creation success %p\n", pixels);
     return waphics_surface_new(pixels, width, height);
 }
 

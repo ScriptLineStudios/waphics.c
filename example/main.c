@@ -17,7 +17,7 @@ static int x;
 
 void init(void) {
     display = waphics_surface_new(pixels, WIDTH, HEIGHT);
-    image = waphics_surface_from_file("assets/block1.png");
+    image = waphics_surface_from_file("assets/images/block1.png");
 }
 
 uint32_t *render(void) {
