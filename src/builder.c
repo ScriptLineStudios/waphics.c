@@ -14,7 +14,6 @@ void usage(void) {
 }
 
 static const char *c = STRING(
-    #include <stdio.h>
 
 );
 
