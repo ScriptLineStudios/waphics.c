@@ -13,10 +13,6 @@ void usage(void) {
     exit(1);
 }
 
-static const char *c = STRING(
-
-);
-
 int main(int argc, char **argv) {
     if (!strcmp(argv[1], "setup")) {
         printf("setting up new project...\n");
