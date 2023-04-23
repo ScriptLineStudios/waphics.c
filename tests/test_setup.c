@@ -5,6 +5,7 @@
 
 void test_keys() {
     assert(KEY_A == 65);
+    assert(KEY_B == 66);
 }
 
 void test_rect() {
