@@ -4,7 +4,7 @@
 Waphics allows you to easily create video games in C and export them to the web browser. Waphics provides a Javascript runtime enviroment for your C code which allows for:
 
 <ul>
-  <li>User input (keyboard and mouse)</li>
+  <li>Keyboard input (mouse input to come)</li>
   <li>Playing sounds</li>
   <li>Rendering primitimes (circles, rectangles, triangles)</li>
   <li>Image rendering</li>
