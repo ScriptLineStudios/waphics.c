@@ -85,6 +85,7 @@ void waphics_draw_triangle_3(Surface display, Vector2 p1, Vector2 p2, Vector2 p3
 void waphics_draw_image(Surface display, Vector2 position, Surface image);
 void waphics_draw_image_alpha(Surface display, Rectangle rect,
         uint32_t scale, uint32_t *pixels, uint32_t alpha);
+Surface waphics_surface_scale(Surface surface, Vector2 size);
 uint32_t waphics_rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
 uint32_t waphics_rgb(uint32_t r, uint32_t g, uint32_t b);
 int waphics_collide_rect(Rectangle *rect1, Rectangle *rect2);
@@ -378,6 +379,22 @@ void waphics_draw_image(Surface display, Vector2 position, Surface image) {
 //         }
 //     }
 // }
+
+Surface waphics_surface_scale(Surface surface, Vector2 size) {
+    size_t scale_x = size.x / surface.width;
+    size_t scale_y = size.y / surface.height;
+    uint32_t pixels[surface.width * scale_x * surface.height * scale_y];
+    Surface new = waphics_surface_new(pixels, size.x, size.y);
+    printf("%ld %ld\n", scale_x, scale_y);
+    for (size_t y = 0; y < surface.height * scale_y; y++) {
+        for (size_t x = 0; x < surface.width * scale_x; x++) {
+            uint32_t pixel = surface.pixels[(y/scale_y * surface.width + x/scale_x)];
+            new.pixels[y * new.width + x] = pixel;
+        }   
+    }
+
+    return new;
+}
 
 void waphics_draw_image_alpha(Surface display, Rectangle rect,
         uint32_t scale, uint32_t *pixels, uint32_t alpha) {

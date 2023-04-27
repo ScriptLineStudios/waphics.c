@@ -1,5 +1,4 @@
 #define WAPHICS_IMPLEMENTATION
-#define EMSCRIPTEN
 #include "../src/waphics.c"
 
 #include "../assets/block.h"
@@ -23,7 +22,7 @@ void init(void) {
 
 uint32_t *render(void) {
     waphics_fill_display(display, 0xFF000000);
-    // waphics_draw_triangle_3(display, VECTOR2(10+x, 10), VECTOR2(200, 100), VECTOR2(100, 200), RGB(255, 0, x), RGB(x, 255, 0), RGB(0, x, 255));
+    image = waphics_surface_scale(image, VECTOR2(32, 64));
     waphics_draw_image(display, VECTOR2(100, 100), image);
 
     if (get_key(KEY_A)) {
