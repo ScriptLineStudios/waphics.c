@@ -14,6 +14,7 @@ Surface image;
 #define HEIGHT 600
 
 static int x;
+static int y;
 
 void init(void) {
     display = waphics_surface_new(pixels, WIDTH, HEIGHT);
@@ -22,16 +23,21 @@ void init(void) {
 
 uint32_t *render(void) {
     waphics_fill_display(display, 0xFF000000);
-    image = waphics_surface_scale(image, VECTOR2(32, 64));
-    waphics_draw_image(display, VECTOR2(100, 100), image);
+    Surface new = waphics_surface_scale(&image, VECTOR2(135+x, 64));
+    waphics_draw_image(display, VECTOR2(x, y), new);
 
-    if (get_key(KEY_A)) {
-        x--;
-    }
     if (get_key(KEY_D)) {
         x++;
     }
-    
+    if (get_key(KEY_A)) {
+        x--;
+    }
+    if (get_key(KEY_S)) {
+        y++;
+    }
+    if (get_key(KEY_W)) {
+        y--;
+    }
+
     return display.pixels;
 }
-

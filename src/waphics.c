@@ -62,7 +62,7 @@ typedef struct {
 } Circle;
 
 typedef struct {
-    int x, y;
+    float x, y;
 } Vector2;
 
 typedef struct {
@@ -74,7 +74,7 @@ Rectangle waphics_rectangle_new(int x, int y, int width, int height);
 Circle waphics_circle_new(int x, int y, int radius);
 Surface waphics_surface_new(uint32_t *pixels, unsigned int width, unsigned int height);
 Surface waphics_surface_from_file(const char *filename);
-Vector2 waphics_vector2_new(int x, int y);
+Vector2 waphics_vector2_new(float x, float y);
 
 void waphics_fill_display(Surface display, uint32_t color);
 void waphics_draw_rect(Surface display, Rectangle rect, uint32_t color);
@@ -85,7 +85,7 @@ void waphics_draw_triangle_3(Surface display, Vector2 p1, Vector2 p2, Vector2 p3
 void waphics_draw_image(Surface display, Vector2 position, Surface image);
 void waphics_draw_image_alpha(Surface display, Rectangle rect,
         uint32_t scale, uint32_t *pixels, uint32_t alpha);
-Surface waphics_surface_scale(Surface surface, Vector2 size);
+Surface waphics_surface_scale(Surface *surface, Vector2 size);
 uint32_t waphics_rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
 uint32_t waphics_rgb(uint32_t r, uint32_t g, uint32_t b);
 int waphics_collide_rect(Rectangle *rect1, Rectangle *rect2);
@@ -125,7 +125,7 @@ Circle waphics_circle_new(int x, int y, int radius) {
     return circ;
 }
 
-Vector2 waphics_vector2_new(int x, int y) {
+Vector2 waphics_vector2_new(float x, float y) {
     Vector2 vec;
     vec.x = x;
     vec.y = y;
@@ -349,8 +349,12 @@ float lerp(uint32_t v0, uint32_t v1, float t) {
 void waphics_draw_image(Surface display, Vector2 position, Surface image) {
     for (int _y = 0; _y < image.height; _y++) {
         for (int _x = 0; _x < image.width; _x++) {
-            uint32_t pixel = image.pixels[_y * image.width + _x];
-            display.pixels[(_y+position.y) * display.width + (_x + position.x)] = pixel;
+            if (_y < image.height && _x < image.width) {
+                uint32_t pixel = image.pixels[_y * image.width + _x];
+                if (_y+(int)position.y <= display.height && _x + (int)position.x <= display.width) {
+                    display.pixels[(_y+(int)position.y) * display.width + (_x + (int)position.x)] = pixel;
+                }
+            }
         }
     }
 }
@@ -380,17 +384,70 @@ void waphics_draw_image(Surface display, Vector2 position, Surface image) {
 //     }
 // }
 
-Surface waphics_surface_scale(Surface surface, Vector2 size) {
-    size_t scale_x = size.x / surface.width;
-    size_t scale_y = size.y / surface.height;
-    uint32_t pixels[surface.width * scale_x * surface.height * scale_y];
-    Surface new = waphics_surface_new(pixels, size.x, size.y);
-    printf("%ld %ld\n", scale_x, scale_y);
-    for (size_t y = 0; y < surface.height * scale_y; y++) {
-        for (size_t x = 0; x < surface.width * scale_x; x++) {
-            uint32_t pixel = surface.pixels[(y/scale_y * surface.width + x/scale_x)];
-            new.pixels[y * new.width + x] = pixel;
-        }   
+Surface waphics_surface_scale(Surface *surface, Vector2 size) {
+    float size_x = size.x / surface->width;
+    float size_y = size.y / surface->height;
+
+    uint32_t pixels[(int)(surface->width * size_x * surface->height * size_y)];
+
+    Surface new = waphics_surface_new(pixels, surface->width * size_x, surface->height * size_y);
+    waphics_fill_display(new, 0xFFFFFFF);
+
+    Vector2 tri_1_p1  = VECTOR2(0, 0);
+    Vector2 tri_1_p2  = VECTOR2(new.width, 0);
+    Vector2 tri_1_p3  = VECTOR2(0, new.height);
+
+    Vector2 uv_1_p1 = VECTOR2(0, 1);
+    Vector2 uv_1_p2 = VECTOR2(1, 1);
+    Vector2 uv_1_p3 = VECTOR2(0, 0);
+
+    Vector2 tri_2_p1  = VECTOR2(new.width, 0);
+    Vector2 tri_2_p2  = VECTOR2(new.width, new.height);
+    Vector2 tri_2_p3  = VECTOR2(0, new.height);
+
+    Vector2 uv_2_p1 = VECTOR2(1, 1);
+    Vector2 uv_2_p2 = VECTOR2(1, 0);
+    Vector2 uv_2_p3 = VECTOR2(0, 0);
+
+
+    for (int y = 0; y < new.height; y++) {
+        for (int x = 0; x < new.width; x++) {
+            float denom = ((tri_1_p2.y - tri_1_p3.y) * (tri_1_p1.x - tri_1_p3.x) + (tri_1_p3.x - tri_1_p2.x) * (tri_1_p1.y - tri_1_p3.y));
+            float barya = ((tri_1_p2.y - tri_1_p3.y) * (x - tri_1_p3.x) + (tri_1_p3.x - tri_1_p2.x) * (y - tri_1_p3.y)) / denom;
+            float baryb = ((tri_1_p3.y - tri_1_p1.y) * (x - tri_1_p3.x) + (tri_1_p1.x - tri_1_p3.x) * (y - tri_1_p3.y)) / denom;
+            float baryc = 1 - barya - baryb;
+
+            if (barya >= 0 && baryb >= 0 && baryc >= 0) {
+                float u = barya * uv_1_p1.x + baryb * uv_1_p2.x + baryc * uv_1_p3.x;
+                float v = barya * uv_1_p1.y + baryb * uv_1_p2.y + baryc * uv_1_p3.y;
+
+                int px = (int)(u * surface->width);
+                int py = (int)(surface->height - (v * surface->height));
+                if (y <= new.height && x <= new.width) {
+                    new.pixels[y * new.width + x] = surface->pixels[py * surface->width + px];
+                }
+            }
+        }
+    }
+
+    for (int y = 0; y < new.height; y++) {
+        for (int x = 0; x < new.width; x++) {
+            float denom = ((tri_2_p2.y - tri_2_p3.y) * (tri_2_p1.x - tri_2_p3.x) + (tri_2_p3.x - tri_2_p2.x) * (tri_2_p1.y - tri_2_p3.y));
+            float barya = ((tri_2_p2.y - tri_2_p3.y) * (x - tri_2_p3.x) + (tri_2_p3.x - tri_2_p2.x) * (y - tri_2_p3.y)) / denom;
+            float baryb = ((tri_2_p3.y - tri_2_p1.y) * (x - tri_2_p3.x) + (tri_2_p1.x - tri_2_p3.x) * (y - tri_2_p3.y)) / denom;
+            float baryc = 1 - barya - baryb;
+
+            if (barya >= 0 && baryb >= 0 && baryc >= 0) {
+                float u = barya * uv_2_p1.x + baryb * uv_2_p2.x + baryc * uv_2_p3.x;
+                float v = barya * uv_2_p1.y + baryb * uv_2_p2.y + baryc * uv_2_p3.y;
+
+                int px = (int)(u * surface->width);
+                int py = (int)(surface->height - (v * surface->height));
+                if (y <= new.height && x <= new.width) {
+                    new.pixels[y * new.width + x] = surface->pixels[py * surface->width + px];
+                }
+            }
+        }
     }
 
     return new;
