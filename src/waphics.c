@@ -383,12 +383,13 @@ void waphics_draw_image(Surface display, Vector2 position, Surface image) {
 //         }
 //     }
 // }
+#define MAX_SURFACE_SIZE 1000000
 
 Surface waphics_surface_scale(Surface *surface, Vector2 size) {
     float size_x = size.x / surface->width;
     float size_y = size.y / surface->height;
 
-    uint32_t pixels[(int)(surface->width * size_x * surface->height * size_y)];
+    uint32_t pixels[MAX_SURFACE_SIZE];
 
     Surface new = waphics_surface_new(pixels, surface->width * size_x, surface->height * size_y);
     waphics_fill_display(new, 0xFFFFFFF);
