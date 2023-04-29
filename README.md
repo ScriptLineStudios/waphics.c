@@ -7,7 +7,7 @@ Waphics allows you to easily create video games in C and export them to the web 
   <li>Keyboard input (mouse input to come)</li>
   <li>Playing sounds</li>
   <li>Rendering primitimes (circles, rectangles, triangles)</li>
-  <li>Image rendering</li>
+  <li>Image rendering (with scaling using uv coordinates)</li>
   <li>Alpha blending</li>
 </ul>
 
