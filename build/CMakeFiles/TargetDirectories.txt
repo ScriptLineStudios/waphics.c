@@ -1,0 +1,16 @@
+/home/scriptline/programming/waphics.c/build/CMakeFiles/waphics.dir
+/home/scriptline/programming/waphics.c/build/CMakeFiles/test.dir
+/home/scriptline/programming/waphics.c/build/CMakeFiles/edit_cache.dir
+/home/scriptline/programming/waphics.c/build/CMakeFiles/rebuild_cache.dir
+/home/scriptline/programming/waphics.c/build/CMakeFiles/list_install_components.dir
+/home/scriptline/programming/waphics.c/build/CMakeFiles/install.dir
+/home/scriptline/programming/waphics.c/build/CMakeFiles/install/local.dir
+/home/scriptline/programming/waphics.c/build/CMakeFiles/install/strip.dir
+/home/scriptline/programming/waphics.c/build/tests/CMakeFiles/test_setup.dir
+/home/scriptline/programming/waphics.c/build/tests/CMakeFiles/test.dir
+/home/scriptline/programming/waphics.c/build/tests/CMakeFiles/edit_cache.dir
+/home/scriptline/programming/waphics.c/build/tests/CMakeFiles/rebuild_cache.dir
+/home/scriptline/programming/waphics.c/build/tests/CMakeFiles/list_install_components.dir
+/home/scriptline/programming/waphics.c/build/tests/CMakeFiles/install.dir
+/home/scriptline/programming/waphics.c/build/tests/CMakeFiles/install/local.dir
+/home/scriptline/programming/waphics.c/build/tests/CMakeFiles/install/strip.dir

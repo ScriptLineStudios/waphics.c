@@ -243,15 +243,16 @@ void waphics_draw_triangle_3(Surface display, Vector2 p1, Vector2 p2, Vector2 p3
     Vector2 op3 = p3;
 
     if (p2.y < p1.y) {
-       swap(&p1, &p2);
+       swap(&p2, &p1);
     }
  
     if (p3.y < p2.y) {
        swap(&p2, &p3);
-       if (p2.y < p1.y)
+       if (p2.y < p1.y) {
           swap(&p2, &p1);
+       }
     }
-    
+
     int xs = p1.x;
     int ys = p1.y; 
 
@@ -261,17 +262,20 @@ void waphics_draw_triangle_3(Surface display, Vector2 p1, Vector2 p2, Vector2 p3
     int xe = p3.x;
     int ye = p3.y; 
     
-    float s1 = (xe - xs) / ((ye - ys) + 0.000000000001);
-    float s2 = (xm - xs) / ((ym - ys) + 0.000000000001);
-    float s3 = (xe - xm) / ((ye - ym) + 0.000000000001);
-    for (int y = ys; y < ye; y++) {
+    float s1 = (float)((xe - xs)) / ((ye - ys) + 1e-17);
+    float s2 = (float)((xm - xs)) / ((ym - ys) + 1e-17);
+    float s3 = (float)((xe - xm)) / ((ye - ym) + 1e-17);
+
+    for (int y = ys; y <= (int)ye; y++) {
         int x1 = xs + (int)((y - ys) * s1);
 
         int x2;
-        if (y < ym)
+        if (y < ym) {
             x2 = xs + (int)((y - ys) * s2);
-        else 
+        }
+        else {
             x2 = xm + (int)((y - ym) * s3);
+        }
         
         if (x1 > x2) {
             int tmp = x1;
@@ -279,14 +283,16 @@ void waphics_draw_triangle_3(Surface display, Vector2 p1, Vector2 p2, Vector2 p3
             x2 = tmp;
         }
 
-        for (int x = x1; x < x2; x++) {
-            float denom = ((op2.y - op3.y) * (op1.x - op3.x) + (op3.x - op2.x) * (op1.y - op3.y));
-            float barya = ((op2.y - op3.y) * (x - op3.x) + (op3.x - op2.x) * (y - op3.y)) / denom;
-            float baryb = ((op3.y - op1.y) * (x - op3.x) + (op1.x - op3.x) * (y - op3.y)) / denom;
-            float baryc = 1 - barya - baryb;
+        // printf("xs = %d, %d %d\n", xs, x1, x2);
+        for (int x = x1; x < (int)x2; x++) {
+            // float denom = ((op2.y - op3.y) * (op1.x - op3.x) + (op3.x - op2.x) * (op1.y - op3.y));
+            // float barya = ((op2.y - op3.y) * (x - op3.x) + (op3.x - op2.x) * (y - op3.y)) / denom;
+            // float baryb = ((op3.y - op1.y) * (x - op3.x) + (op1.x - op3.x) * (y - op3.y)) / denom;
+            // float baryc = 1 - barya - baryb;
             if (x <= display.width && x >= 0) {
                 if (y <= display.height && y >= 0) {
-                    display.pixels[y * display.width + x] = mix_colors_triangle(color1, color2, color3, barya, baryb, baryc);
+                    // printf("here %d %d\n", x, y);
+                    display.pixels[y * display.width + x] = RGBA(255, 0, 0, 255);
                 }
             }
         }   
@@ -358,31 +364,7 @@ void waphics_draw_image(Surface display, Vector2 position, Surface image) {
         }
     }
 }
-// void waphics_draw_image(Surface display, Rectangle rect,
-//         uint32_t scale, uint32_t *pixels) {
-//     for (int _y = 0; _y < rect.h*scale; _y++) {
-//         for (int _x = 0; _x < rect.w*scale; _x++) {
-//             if (_x < display.width && _x > 0 && _y < display.height && _y > 0) {
-//                 printf("%d\n", _y + rect.y);
-//                 if (_y + rect.y > 0) {
-//                     uint32_t pixel = pixels[(_y/scale * rect.w + _x/scale)];
-//                     uint32_t bg_pixel = display.pixels[(_y+rect.y) * display.width + (_x+rect.x)];
 
-//                     uint8_t red = lerp(RED(bg_pixel), RED(pixel), (float)ALPHA(pixel)/255);
-//                     uint8_t green = lerp(GREEN(bg_pixel), GREEN(pixel), (float)ALPHA(pixel)/255);
-//                     uint8_t blue = lerp(BLUE(bg_pixel), BLUE(pixel), (float)ALPHA(pixel)/255);
-//                     uint8_t alpha = lerp(ALPHA(bg_pixel), ALPHA(pixel), (float)ALPHA(pixel)/255);
-//                     if ((_y+rect.y) * display.width + (_x+rect.x) < display.width * display.height) {
-//                         // printf("x = %d y = %d\n", _x + rect.x, _y + rect.y);
-//                         if (_y + rect.y > 0) {
-//                             display.pixels[(_y+rect.y) * display.width + (_x+rect.x)] = RGBA(red, green, blue, alpha);
-//                         }
-//                     }
-//                 }
-//             }
-//         }
-//     }
-// }
 #define MAX_SURFACE_SIZE 1000000
 
 Surface waphics_surface_scale(Surface *surface, Vector2 size) {
@@ -409,7 +391,6 @@ Surface waphics_surface_scale(Surface *surface, Vector2 size) {
     Vector2 uv_2_p1 = VECTOR2(1, 1);
     Vector2 uv_2_p2 = VECTOR2(1, 0);
     Vector2 uv_2_p3 = VECTOR2(0, 0);
-
 
     for (int y = 0; y < new.height; y++) {
         for (int x = 0; x < new.width; x++) {
